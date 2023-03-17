@@ -12,10 +12,6 @@ func SetVerbose(v bool) {
 	verbose = v
 }
 
-func GetVerbose() bool {
-	return verbose
-}
-
 func Print(output string) {
 	log.SetFlags(0)
 	if verbose {

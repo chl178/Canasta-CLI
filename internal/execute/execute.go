@@ -12,14 +12,6 @@ import (
 func Run(path, command string, cmdArgs ...string) (error, string) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-
-	isVerbose := logging.GetVerbose()
-	if isVerbose {
-		if command == "docker-compose" {
-			cmdArgs = append([]string{"--verbose"}, cmdArgs...)
-		}
-	}
-
 	logging.Print(fmt.Sprint(command, " ", strings.Join(cmdArgs, " ")))
 	cmd := exec.Command("bash", "-c", command+" "+strings.Join(cmdArgs, " "))
 	cmd.Stdout = &stdout

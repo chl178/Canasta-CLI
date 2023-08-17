@@ -51,10 +51,10 @@ func CopyEnv(envPath, path, pwd string) error {
 	if err != nil {
 		return err
 	}
-	if err := SaveEnvVariable(path+"/.env", "MW_SITE_SERVER", "http://"+domainNames[0]); err != nil {
+	if err := SaveEnvVariable(path+"/.env", "MW_SITE_SERVER", "https://"+domainNames[0]); err != nil {
 		return err
 	}
-	if err := SaveEnvVariable(path+"/.env", "MW_SITE_FQDN", "http://"+domainNames[0]); err != nil {
+	if err := SaveEnvVariable(path+"/.env", "MW_SITE_FQDN", domainNames[0]); err != nil {
 		return err
 	}
 	return nil
@@ -186,8 +186,8 @@ func RewriteCaddy(path string) error {
 		if i > 0 {
 			newLine.WriteString(", ")
 		}
-		newLine.WriteString("http://")
 		newLine.WriteString(name)
+		newLine.WriteString(":{$HTTPS_PORT}")
 	}
 
 	// Create/Truncate the file for writing

@@ -70,7 +70,7 @@ func Install(path, yamlPath, orchestrator string, canastaInfo canasta.CanastaVar
 		wikiName := WikiNames[i]
 		domainName := domainNames[i]
 
-		command := fmt.Sprintf("php maintenance/install.php --dbserver=%s --dbname='%s' --confpath=%s --scriptpath=%s --server='http://%s' --dbuser='%s' --dbpass='%s'  --pass='%s' '%s' '%s'",
+		command := fmt.Sprintf("php maintenance/install.php --dbserver=%s --dbname='%s' --confpath=%s --scriptpath=%s --server='https://%s' --dbuser='%s' --dbpass='%s'  --pass='%s' '%s' '%s'",
 			dbServer, wikiName, confPath, scriptPath, domainName, "root", envVariables["MYSQL_PASSWORD"], canastaInfo.AdminPassword, wikiName, canastaInfo.AdminName)
 
 		output, err = orchestrators.ExecWithError(path, orchestrator, "web", command)
@@ -156,7 +156,7 @@ func InstallOne(path, name, domain, wikipath, orchestrator string) error {
 	scanner.Scan() // get the first line
 	AdminName := scanner.Text()
 
-	command = fmt.Sprintf("php maintenance/install.php --dbserver=%s --dbname='%s' --confpath=%s --scriptpath=%s --server='http://%s' --dbuser='%s' --dbpass='%s'  --pass='%s' '%s' '%s'",
+	command = fmt.Sprintf("php maintenance/install.php --dbserver=%s --dbname='%s' --confpath=%s --scriptpath=%s --server='https://%s' --dbuser='%s' --dbpass='%s'  --pass='%s' '%s' '%s'",
 		dbServer, name, confPath, scriptPath, domain, "root", envVariables["MYSQL_PASSWORD"], AdminPassword, name, AdminName)
 	output, err = orchestrators.ExecWithError(path, orchestrator, "web", command)
 	if err != nil {

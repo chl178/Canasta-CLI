@@ -44,7 +44,7 @@ func PromptWiki(name, urlString, id, siteName string) (string, string, string, s
 
 	// add 'http://' to urlString if no schema is present
 	if !strings.HasPrefix(urlString, "http://") && !strings.HasPrefix(urlString, "https://") {
-		urlString = "http://" + urlString
+		urlString = "https://" + urlString
 	}
 
 	parsedUrl, err := url.Parse(urlString)

@@ -15,6 +15,7 @@ import (
 var (
 	instance  config.Installation
 	pwd       string
+	wiki      string
 	err       error
 	verbose   bool
 	skinCmd   *cobra.Command
@@ -37,6 +38,7 @@ func NewCmdCreate() *cobra.Command {
 	}
 	skinCmd.PersistentFlags().StringVarP(&instance.Id, "id", "i", "", "Canasta instance ID")
 	skinCmd.PersistentFlags().StringVarP(&instance.Path, "path", "p", pwd, "Canasta installation directory")
+	skinCmd.PersistentFlags().StringVarP(&wiki, "wiki", "w", "", "ID of the specific wiki within the Canasta farm")
 	skinCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose Output")
 
 	skinCmd.AddCommand(listCmdCreate())

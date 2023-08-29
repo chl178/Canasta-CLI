@@ -9,7 +9,9 @@ import (
 	"os/user"
 	"path"
 	"syscall"
+	"text/tabwriter"
 
+	"github.com/CanastaWiki/Canasta-CLI-Go/internal/farmsettings"
 	"github.com/CanastaWiki/Canasta-CLI-Go/internal/logging"
 	"github.com/kirsle/configdir"
 )
@@ -54,10 +56,39 @@ func ListAll() {
 	if err != nil {
 		logging.Fatal(err)
 	}
-	fmt.Printf("Canasta ID\tInstallation Path\t\t\t\t\tOrchestrator\n\n")
+
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(writer, "Canasta ID\tWiki ID(Name)\tServer Name\tServer Path\tInstallation Path\tOrchestrator")
+
 	for _, installation := range existingInstallations.Installations {
-		fmt.Printf("%s\t%s\t%s\n", installation.Id, installation.Path, installation.Orchestrator)
+		ids, serverNames, paths, err := farmsettings.ReadWikisYaml(installation.Path + "/config/wikis.yaml")
+		if err != nil {
+			fmt.Printf("Error reading wikis.yaml for installation ID '%s': %s\n", installation.Id, err)
+			continue
+		}
+
+		for i := range ids {
+			if i == 0 {
+				fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%s\t%s\n",
+					installation.Id,
+					ids[i],
+					serverNames[i],
+					paths[i],
+					installation.Path,
+					installation.Orchestrator)
+			} else {
+				fmt.Fprintf(writer, "%s\t%s\t%s\t%s\t%s\t%s\n",
+					"-",
+					ids[i],
+					serverNames[i],
+					paths[i],
+					installation.Path,
+					installation.Orchestrator)
+			}
+
+		}
 	}
+	writer.Flush()
 }
 
 func GetDetails(canastaId string) (Installation, error) {

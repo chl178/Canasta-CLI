@@ -13,3 +13,10 @@ func Clone(repo, path string) error {
 	}
 	return nil
 }
+func Cloneb(repo, path string, branch string) error {
+	err, output := execute.Run("", "git", "clone", "-b", branch, repo, path)
+	if err != nil {
+		return fmt.Errorf(output)
+	}
+	return nil
+}

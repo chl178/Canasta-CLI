@@ -1,0 +1,4 @@
+wikis:
+  - id: local
+    url: localhost
+    name: localhost

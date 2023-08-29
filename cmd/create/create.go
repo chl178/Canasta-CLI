@@ -10,8 +10,10 @@ import (
 
 	"github.com/CanastaWiki/Canasta-CLI-Go/internal/canasta"
 	"github.com/CanastaWiki/Canasta-CLI-Go/internal/config"
+	"github.com/CanastaWiki/Canasta-CLI-Go/internal/farmsettings"
 	"github.com/CanastaWiki/Canasta-CLI-Go/internal/mediawiki"
 	"github.com/CanastaWiki/Canasta-CLI-Go/internal/orchestrators"
+	"github.com/CanastaWiki/Canasta-CLI-Go/internal/prompt"
 )
 
 func NewCmdCreate() *cobra.Command {
@@ -19,6 +21,9 @@ func NewCmdCreate() *cobra.Command {
 		path         string
 		orchestrator string
 		pwd          string
+		name         string
+		domain       string
+		yamlPath     string
 		err          error
 		keepConfig   bool
 		canastaInfo  canasta.CanastaVariables
@@ -29,11 +34,11 @@ func NewCmdCreate() *cobra.Command {
 		Short: "Create a Canasta installation",
 		Long:  "Creates a Canasta installation using an orchestrator of your choice.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if canastaInfo, err = mediawiki.PromptUser(canastaInfo); err != nil {
+			if name, canastaInfo, err = prompt.PromptUser(name, yamlPath, canastaInfo); err != nil {
 				log.Fatal(err)
 			}
 			fmt.Println("Creating Canasta installation '" + canastaInfo.Id + "'...")
-			if err = createCanasta(canastaInfo, pwd, path, orchestrator, override); err != nil {
+			if err = createCanasta(canastaInfo, pwd, path, name, domain, yamlPath, orchestrator, override); err != nil {
 				fmt.Print(err.Error(), "\n")
 				if keepConfig {
 					log.Fatal(fmt.Errorf("Keeping all the containers and config files\nExiting"))
@@ -59,8 +64,8 @@ func NewCmdCreate() *cobra.Command {
 	createCmd.Flags().StringVarP(&path, "path", "p", pwd, "Canasta directory")
 	createCmd.Flags().StringVarP(&orchestrator, "orchestrator", "o", "docker-compose", "Orchestrator to use for installation")
 	createCmd.Flags().StringVarP(&canastaInfo.Id, "id", "i", "", "Canasta instance ID")
-	createCmd.Flags().StringVarP(&canastaInfo.WikiName, "wiki", "w", "", "Name of wiki")
-	createCmd.Flags().StringVarP(&canastaInfo.DomainName, "domain-name", "n", "localhost", "Domain name")
+	createCmd.Flags().StringVarP(&name, "wiki", "w", "", "Name of wiki")
+	createCmd.Flags().StringVarP(&domain, "domain-name", "n", "localhost", "Domain name")
 	createCmd.Flags().StringVarP(&canastaInfo.AdminName, "WikiSysop", "a", "", "Initial wiki admin username")
 	createCmd.Flags().StringVarP(&canastaInfo.AdminPassword, "password", "s", "", "Initial wiki admin password")
 	createCmd.Flags().BoolVarP(&keepConfig, "keep-config", "k", false, "Keep the config files on installation failure")
@@ -69,14 +74,26 @@ func NewCmdCreate() *cobra.Command {
 }
 
 // importCanasta accepts all the keyword arguments and create a installation of the latest Canasta.
-func createCanasta(canastaInfo canasta.CanastaVariables, pwd, path, orchestrator, override string) error {
+func createCanasta(canastaInfo canasta.CanastaVariables, pwd, path, name, domain, yamlPath, orchestrator, override string) error {
 	if _, err := config.GetDetails(canastaInfo.Id); err == nil {
 		log.Fatal(fmt.Errorf("Canasta installation with the ID already exist!"))
+	}
+	if err := farmsettings.CreateYaml(name, domain, &yamlPath); err != nil {
+		return err
 	}
 	if err := canasta.CloneStackRepo(orchestrator, canastaInfo.Id, &path); err != nil {
 		return err
 	}
-	if err := canasta.CopyEnv("", canastaInfo.DomainName, path, pwd); err != nil {
+	if err := canasta.CopyYaml(yamlPath, path); err != nil {
+		return err
+	}
+	if err := canasta.CopyEnv("", path, pwd); err != nil {
+		return err
+	}
+	if err := canasta.CopySettings(path); err != nil {
+		return err
+	}
+	if err := canasta.RewriteCaddy(path); err != nil {
 		return err
 	}
 	if err := orchestrators.CopyOverrideFile(path, orchestrator, override, pwd); err != nil {
@@ -85,7 +102,7 @@ func createCanasta(canastaInfo canasta.CanastaVariables, pwd, path, orchestrator
 	if err := orchestrators.Start(path, orchestrator); err != nil {
 		return err
 	}
-	if _, err := mediawiki.Install(path, orchestrator, canastaInfo); err != nil {
+	if _, err := mediawiki.Install(path, yamlPath, orchestrator, canastaInfo); err != nil {
 		return err
 	}
 	if err := config.Add(config.Installation{Id: canastaInfo.Id, Path: path, Orchestrator: orchestrator}); err != nil {

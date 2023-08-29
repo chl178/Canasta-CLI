@@ -80,7 +80,7 @@ func importCanasta(pwd, canastaId, domainName, path, orchestrator, databasePath,
 	if err := canasta.CloneStackRepo(orchestrator, canastaId, &path); err != nil {
 		return err
 	}
-	if err := canasta.CopyEnv(envPath, domainName, path, pwd); err != nil {
+	if err := canasta.CopyEnv(envPath, path, pwd); err != nil {
 		return err
 	}
 	if err := canasta.CopyDatabase(databasePath, path, pwd); err != nil {

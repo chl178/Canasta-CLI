@@ -17,12 +17,12 @@ func disableCmdCreate() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			extensions := strings.Split(args[0], ",")
 			for _, extension := range extensions {
-				extensionName, err := extensionsskins.CheckEnabled(extension, instance, constants)
+				extensionName, err := extensionsskins.CheckEnabled(extension, wiki, instance, constants)
 				if err != nil {
 					fmt.Print(err.Error() + "\n")
 					continue
 				}
-				extensionsskins.Disable(extensionName, instance, constants)
+				extensionsskins.Disable(extensionName, wiki, instance, constants)
 			}
 			return err
 		},

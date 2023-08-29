@@ -22,7 +22,7 @@ func enableCmdCreate() *cobra.Command {
 					fmt.Print(err.Error() + "\n")
 					continue
 				}
-				extensionsskins.Enable(extensionName, instance, constants)
+				extensionsskins.Enable(extensionName, wiki, instance, constants)
 			}
 			return err
 		},
